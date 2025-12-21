@@ -23,10 +23,10 @@ import {
 	PaneCursorType,
 	TextAlignment,
 	deepCopy,
+	ensureNotNull
 } from 'lightweight-charts-line-tools-core';
 
 import { LineToolText } from '../model/LineToolText';
-import { ensureNotNull } from 'lightweight-charts-line-tools-core/dist/utils/helpers'; // Assuming helper path
 
 
 /**
