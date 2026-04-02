@@ -12,8 +12,6 @@ import {
 	LineToolPaneView,
 	CompositeRenderer,
 	AnchorPoint,
-	OffScreenState,
-	getToolCullingState,
 	LineToolOptionsInternal,
 	TextRenderer,
 	HitTestType,
@@ -93,29 +91,21 @@ export class LineToolTextPaneView<HorzScaleItem> extends LineToolPaneView<HorzSc
 			return;
 		}
 
+		// --- CULLING CHECK ---
+		// We query the pre-calculated state from the Model. If the anchor 
+		// point is off-screen, we exit early to avoid the expensive 
+		// font measurement and alignment logic below.
+		if (this._tool.isCulled()) {
+			//console.log('text culled')
+			return;
+		}
+
 		const points = this._tool.points();
 		
 		// Tool requires at least one point to draw.
 		if (points.length < 1) {
 			return;
 		}
-
-		// --- CULLING IMPLEMENTATION START ---
-
-		/**
-		 * CULLING & VISIBILITY CHECK
-		 *
-		 * Since the Text tool is defined by a single point with no infinite extensions,
-		 * we use the standard culling logic. If the anchor point (P0) is off-screen,
-		 * the tool is considered hidden.
-		 */
-		const cullingState = getToolCullingState(points, this._tool as BaseLineTool<HorzScaleItem>);
-		
-		if (cullingState !== OffScreenState.Visible) {
-			//console.log('text culled')
-			return; // Exit if culled
-		}
-		// --- CULLING IMPLEMENTATION END ---
 
 		// 1. Coordinate Conversion: Get screen coordinates for the single point P0.
 		const hasScreenPoints = this._updatePoints(); // Converts logical points to screen coordinates (_points array)

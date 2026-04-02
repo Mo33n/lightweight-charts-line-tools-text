@@ -30,6 +30,8 @@ import {
 	TextOptions,
 	PaneCursorType,
 	CompositeRenderer,
+	getToolCullingState,
+	OffScreenState,	
 } from 'lightweight-charts-line-tools-core';
 
 import { LineToolTextPaneView } from '../views/LineToolTextPaneView';
@@ -235,5 +237,35 @@ export class LineToolText<HorzScaleItem> extends BaseLineTool<HorzScaleItem> {
 	public override isFinished(): boolean {
 		return this._points.length >= this.pointsCount;
 	}
+
+	/**
+	 * Calculates the Text tool's visibility based on its single anchor point.
+	 * 
+	 * ### Tutorial Note on Text Culling
+	 * The Text tool is defined by a single coordinate (P0). This method uses the 
+	 * core culling engine to determine if that anchor point is within the 
+	 * visible range of the chart (plus the safety buffer).
+	 * 
+	 * Moving this check to the Model is highly efficient for Text tools because 
+	 * it allows the View to completely skip the font measurement and alignment 
+	 * calculations if the tool is off-screen.
+	 * 
+	 * @protected
+	 * @override
+	 */
+	protected override updateCullingState(): void {
+		const points = this.points();
+
+		// --- CULLING IMPLEMENTATION START ---
+
+		// Perform standard point culling. If the anchor point is off-screen, 
+		// the tool is considered hidden.
+		const cullingState = getToolCullingState(points, this);
+
+		// Any state other than 'Visible' results in the tool being culled.
+		this._setIsCulled(cullingState !== OffScreenState.Visible);
+
+		// --- CULLING IMPLEMENTATION END ---
+	}	
 
 }
